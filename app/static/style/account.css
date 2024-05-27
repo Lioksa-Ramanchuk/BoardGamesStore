@@ -1,0 +1,8 @@
+@import './common.css';
+@import './utils/form.css';
+@import './utils/buttons-row.css';
+
+.buttons-row {
+    margin-top: 20px;
+    justify-content: end;
+}

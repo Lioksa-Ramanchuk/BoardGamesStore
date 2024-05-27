@@ -1,0 +1,10 @@
+.buttons-row {
+    margin: 0 20px;
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 10px;
+}
+.buttons-row button {
+    flex-basis: 1;
+    margin: 10px;
+}

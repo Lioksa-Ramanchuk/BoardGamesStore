@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Афармленне заказа | Інтэрнэт-крама настольных гульняў</title>
+    <meta charset="utf-8"/>
+    <link rel='icon' href='/images/interface/icon.png'/>
+    <link rel="stylesheet" type="text/css" href="/style/ordering.css"/>
+</head>
+<body>
+    <header>
+        <img src="/images/interface/icon.png"/>
+        <h1>Інтэрнэт-крама настольных гульняў</h1>
+    </header>
+    <div class="content">
+        <nav>
+            <ul>
+                <li><a href="/catalog">Каталог</a></li>
+                <li><a href="/favs">Абранае</a></li>
+                <li><a href="/cart">Кошык</a></li>
+                <li><a href="/ordering" class="active">Афармленне заказа</a></li>
+                <li><a href="/orders">Заказы</a></li>
+                <li><a href="/account">Акаўнт</a></li>
+            </ul>
+        </nav>
+        <main>
+            <div class="forms-container">
+                <form action="/api/make-order" method="POST" id="make-order-form" autocomplete="off">
+                    <div class="form-field">
+                        <label for="o-card-number">Нумар карткі</label>
+                        <input type="text" id="o-card-number" name="card_number" required placeholder="XXXX XXXX XXXX XXXX" pattern="^(\s*\d\s*){16}$" title="16 лічбаў"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="o-cvv">CVV</label>
+                        <input type="text" id="o-cvv" name="cvv" required placeholder="XXX" pattern="^\d{3}$" title="3 лічбы"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="o-expiry">Тэрмін дзеяння</label>
+                        <input type="text" id="o-expiry" name="expiry" required placeholder="XX/XX" pattern="^\d\d/\d\d$"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="o-comment">Каментар</label>
+                        <input type="text" id="o-comment" name="comment" placeholder="Каментар да заказа"/>
+                    </div>
+                    <p id="cart-cost" class="cart-cost"></p>
+                    <button type="submit">Аформіць заказ</button>
+<% if (locals.o_error) { %>
+                    <p class="error-msg"><%= o_error %></p>
+<% } %>
+                </form>
+            </div>
+        </main>
+    </div>
+    <footer>
+        <p>(ɔ) Аляксей Раманчук 2023. All rights reversed.</p>
+        <a href="https://www.flaticon.com/free-icons/board-game" title="board game icons">Board game icons created by Freepik - Flaticon</a>
+    </footer>
+    <script>
+        const $ = q => document.querySelector(q);
+
+        updateCartCost();
+
+        function updateCartCost() {
+            fetch(`/api/get-cart-cost`)
+                .then(res => res.json())
+                .then(data => {
+                    $('#cart-cost').innerHTML = `Кошт: ${data.cart_cost} Br`;
+                });
+        }
+    </script>
+</body>
+</html>

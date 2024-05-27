@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Дадаць тавар | Інтэрнэт-крама настольных гульняў</title>
+    <meta charset="utf-8"/>
+    <link rel='icon' href='/images/interface/icon.png'/>
+    <link rel="stylesheet" type="text/css" href="/style/additem.css"/>
+</head>
+<body>
+    <header>
+        <img src="/images/interface/icon.png"/>
+        <h1>Інтэрнэт-крама настольных гульняў</h1>
+    </header>
+    <div class="content">
+        <nav>
+            <ul>
+                <li><a href="/catalog">Каталог</a></li>
+                <li><a href="/add-item" class="active">Дадаць тавар</a></li>
+                <li><a href="/orders">Заказы</a></li>
+                <li><a href="/account">Акаўнт</a></li>
+            </ul>
+        </nav>
+        <main>
+            <div class="forms-container">
+                <form class="item-image-wrapper">
+                    <img id="i-image" src="/images/items/default.png"/>
+                </form>
+                <form action="/api/add-item" method="POST" enctype="multipart/form-data" id="item-info-form" class="item-info" autocomplete="off">
+                    <div class="form-field">
+                        <label for="i-title">Назва тавара</label>
+                        <input type="text" id="i-title" name="title" placeholder="Назва тавара" required maxlength="127"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-price">Цана (Br)</label>
+                        <input type="number" id="i-price" name="price" placeholder="Цана" required min="0" max="9999999.99" step="0.01" value="0"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-count">Колькасць</label>
+                        <input type="number" id="i-count" name="count" placeholder="Колькасць" required min="0" max="9999999" step="1" value="0"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-image-path">Выява</label>
+                        <input type="file" id="i-image-path" name="image" accept="image/*" placeholder="Шлях да выявы" onchange="uploadImage(event)"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-description">Апісанне</label>
+                        <textarea id="i-description" name="description" placeholder="Апісанне тавара" required maxlength="1000"></textarea>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-category">Катэгорыя</label>
+                        <input type="text" id="i-category" name="category" placeholder="Катэгорыя" required maxlength="127"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-publisher">Выдавецтва</label>
+                        <input type="text" id="i-publisher" name="publisher" placeholder="Выдавецтва" required maxlength="127"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-year">Год выдання</label>
+                        <input type="number" id="i-year" name="year" placeholder="Год выдання" required min="0" max="3000" step="1" value="2020"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-min-players">Мінімальная колькасць гульцоў</label>
+                        <input type="number" id="i-min-players" name="min_players" placeholder="Мінімальная колькасць гульцоў" required min="1" max="1000" step="1" value="1"
+                                onchange="document.querySelector('#i-max-players').min = this.value;"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-max-players">Максімальная колькасць гульцоў</label>
+                        <input type="number" id="i-max-players" name="max_players" placeholder="Максімальная колькасць гульцоў" required min="document.querySelector('#i-min-players').value" max="1000" step="1"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-play-time">Гульнявы час (у хвілінах)</label>
+                        <input type="number" id="i-play-time" name="play_time" placeholder="Гульнявы час" required min="0" max="3000" step="1"/> 
+                    </div>
+                    <div class="form-field">
+                        <label for="i-player-min-age">Мінімальны ўзрост гульцоў</label>
+                        <input type="number" id="i-player-min-age" name="player_min_age" placeholder="Мінімальны ўзрост гульцоў" required min="0" max="150" step="1" value="0"/> 
+                    </div>
+                    <div class="form-field form-field-horizontal">
+                        <input type="checkbox" id="i-is-available" name="is_available" checked value="true"/>
+                        <label for="i-is-available">Тавар даступны</label>
+                    </div>
+                    <button type="submit">Дадаць тавар у каталог</button>
+<% if (locals.ai_error) { %>
+                    <p class="error-msg"><%= ai_error %></p>
+<% } %> 
+<% if (locals.ai_success) { %>
+                    <p class="success-msg"><%= ai_success %></p>
+<% } %>
+                </form>
+            </div>
+        </main>
+    </div>
+    <footer>
+        <p>(ɔ) Аляксей Раманчук 2023. All rights reversed.</p>
+        <a href="https://www.flaticon.com/free-icons/board-game" title="board game icons">Board game icons created by Freepik - Flaticon</a>
+    </footer>
+    <script>
+        const $ = q => document.querySelector(q);
+
+        $(`#i-year`).value = new Date().getFullYear();
+        
+        function uploadImage(event) {
+            $(`#i-image`).src = URL.createObjectURL(event.target.files[0]);
+        }
+    </script>
+</body>
+</html>

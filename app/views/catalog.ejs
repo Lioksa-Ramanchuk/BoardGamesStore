@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Каталог | Інтэрнэт-крама настольных гульняў</title>
+    <meta charset="utf-8"/>
+    <link rel='icon' href='/images/interface/icon.png'/>
+    <link rel="stylesheet" type="text/css" href="/style/catalog.css"/>
+</head>
+<body>
+    <header>
+        <img src="/images/interface/icon.png"/>
+        <h1>Інтэрнэт-крама настольных гульняў</h1>
+    </header>
+    <div class="content">
+        <nav>
+            <ul>
+<% if (role === 'ADMINROLE') { %> 
+                <li><a href="/catalog" class="active">Каталог</a></li>
+                <li><a href="/add-item">Дадаць тавар</a></li>
+                <li><a href="/orders">Заказы</a></li>
+                <li><a href="/account">Акаўнт</a></li>
+<% } else if (role === 'CLIENTROLE') { %>
+                <li><a href="/catalog" class="active">Каталог</a></li>
+                <li><a href="/favs">Абранае</a></li>
+                <li><a href="/cart">Кошык</a></li>
+                <li><a href="/orders">Заказы</a></li>
+                <li><a href="/account">Акаўнт</a></li>
+<% } else if (role === 'GUESTROLE') { %>
+                <li><a href="/catalog" class="active">Каталог</a></li>
+                <li><a href="/account">Акаўнт</a></li>
+<% } %>
+            </ul>
+        </nav>
+        <main>
+            <form id="catalog-filters" class="set-filters">
+                <div class="set-filter">
+                    <label for="f-title">Назва тавара</label>
+                    <input type="text" id="f-title" placeholder="Назва тавара"/>
+                </div>
+                <div class="set-filter">
+                    <label for="f-publisher">Назва выдавецтва</label>
+                    <input type="text" id="f-publisher" placeholder="Назва выдавецтва"/>
+                </div>
+                <div class="set-filter">
+                    <label for="f-category">Катэгорыя</label>
+                    <input type="text" id="f-category" placeholder="Катэгорыя"/>
+                </div>
+                <div class="set-filter set-filter-horizontal">
+                    <input type="checkbox" id="f-in_stock"/>
+                    <label for="f-in_stock">Толькі ў наяўнасці</label>
+                </div>
+                <div class="set-filter set-filter-horizontal">
+                    <label for="f-ordering">Спачатку</label>
+                    <select id="f-ordering">
+                        <option value="last_added" selected>новыя</option>
+                        <option value="price_asc">танныя</option>
+                        <option value="price_desc">дарагія</option>
+                    </select>
+                </div>
+            </form>
+<% if (role === 'ADMINROLE') { %>
+            <div class="buttons-row">
+                <form action="/api/import-items-from-xml" method="POST" id="import-items-from-xml-form">
+                    <button type="submit">Дадаць тавары з XML</button>
+                </form>
+                <form action="/api/export-items-to-xml" method="POST" id="export-items-to-xml-form">
+                    <button type="submit">Экспартаваць тавары ў XML</button>
+                </form>
+            </div>
+    <% if (locals.xml_error) { %>
+            <p class="error-msg"><%= xml_error %></p>
+    <% } %>
+    <% if (locals.xml_success) { %>
+            <p class="success-msg"><%= xml_success %></p>
+    <% } %>
+<% } %>
+            <div id="items-set" class="items-set"></div>
+        </main>
+    </div>
+    <footer>
+        <p>(ɔ) Аляксей Раманчук 2023. All rights reversed.</p>
+        <a href="https://www.flaticon.com/free-icons/board-game" title="board game icons">Board game icons created by Freepik - Flaticon</a>
+    </footer>
+    <script>
+        const $ = q => document.querySelector(q);
+
+        $('#catalog-filters').addEventListener('change', async () => {
+            updateCatalog()
+        });
+
+        updateCatalog();
+
+        function updateCatalog() {
+            const [fTitle, fPublisher, fInStock, fCategory, fOrdering] = [
+                    $('#f-title').value,
+                    $('#f-publisher').value,
+                    $('#f-in_stock').checked ? 1 : 0,
+                    $('#f-category').value,
+                    $('#f-ordering').value,
+                ];
+
+            fetch(`/api/catalog?f_title=${fTitle}&f_publisher=${fPublisher}&f_in_stock=${fInStock}&f_category=${fCategory}&f_ordering=${fOrdering}`)
+                .then(res => res.json())
+                .then(items => {
+                    const kItemsSet = $('#items-set');
+                    kItemsSet.innerHTML = '';
+                    items.forEach(item => {
+                        let [iId, iTitle, iPrice, iImage, iIsInStock, iIsAvailable, iIsInFavs, iIsInCart] = item;
+                        kItemsSet.innerHTML += `
+                            <div id="item-${iId}" class="item-block" onclick="itemBlockOnClick(event, ${iId})">
+                                <img src="${iImage}" class="item-image"/>
+                                <p class="item-title">${iTitle}</p>
+                                <p class="item-price">${iPrice.toFixed(2)} Br</p>
+                                <div class="item-btns">
+            <% if (role === 'ADMINROLE') { %>
+                                    <button class="item-button item-update" style="background-image: url('/images/interface/update_item_btn.png')"></button>
+            <% } else if (role === 'CLIENTROLE') { %>
+                                    <button class="item-button item-tgl-in-favs"></button>
+                                    <button class="item-button item-tgl-in-cart"></button>
+            <% } %>
+                                </div>
+                            </div>
+                        `;
+                        loadItem(iId, iIsInStock, iIsAvailable, iIsInFavs, iIsInCart);
+                    });
+            });
+        }
+
+        function loadItem(iId, iIsInStock, iIsAvailable, iIsInFavs, iIsInCart) {
+<% if (role === 'CLIENTROLE') { %>
+                $(`#item-${iId} .item-tgl-in-favs`).style.backgroundImage = 
+                    `url('${getInFavsToggleBtnImg(iIsInFavs)}')`;
+                let tglInCartBtn = $(`#item-${iId} .item-tgl-in-cart`);
+                tglInCartBtn.style.backgroundImage = 
+                    `url(${getInCartToggleBtnImg(iIsInCart)}`;
+                tglInCartBtn.disabled = !iIsInCart && (!iIsAvailable || !iIsInStock);
+<% } %>
+            if (!iIsAvailable) {
+                $(`#item-${iId}`).innerHTML += '<p class="item-not-available">Недаступна</p>';
+            } else if (!iIsInStock) {
+                $(`#item-${iId}`).innerHTML += '<p class="item-not-in-stock">Няма ў наяўнасці</p>';
+            }
+        }
+
+        function itemBlockOnClick(e, id) {
+<% if (role === 'ADMINROLE') { %>
+                if (e.target === $(`#item-${id} .item-update`)) {
+                    window.location.href = `/update-item/${id}`;
+                    return;
+                }
+<% } else if (role === 'CLIENTROLE') { %>
+                if (e.target === $(`#item-${id} .item-tgl-in-favs`)) {
+                    toggleItemInFavs(id);
+                    return;
+                } else if (e.target === $(`#item-${id} .item-tgl-in-cart`)) {
+                    toggleItemInCart(id);;
+                    return;
+                }
+<% } %>
+            window.location.href = `/item/${id}`;
+        }
+
+        function toggleItemInFavs(id) {
+            fetch(`/api/toggle-in-favs/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(json => {
+                    $(`#item-${id} .item-tgl-in-favs`).style.backgroundImage = 
+                        `url(${getInFavsToggleBtnImg(json.isInFavs)})`;
+                });
+        }
+        function getInFavsToggleBtnImg(isInFavs) {
+            return isInFavs ? '/images/interface/rem_from_favs_btn.png' : '/images/interface/add_to_favs_btn.png'
+        }
+        function toggleItemInCart(id) {
+            fetch(`/api/toggle-in-cart/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(json => {
+                    $(`#item-${id} .item-tgl-in-cart`).style.backgroundImage = 
+                        `url(${getInCartToggleBtnImg(json.isInCart)})`;
+                });
+        }
+        function getInCartToggleBtnImg(isInCart) {
+            return isInCart ? '/images/interface/rem_from_cart_btn.png' : '/images/interface/add_to_cart_btn.png'
+        }
+    </script>
+</body>
+</html>

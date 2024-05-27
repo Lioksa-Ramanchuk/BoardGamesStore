@@ -1,0 +1,46 @@
+@import './item-info.css';
+
+.items-set {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-start;
+    margin: 20px;
+}
+.item-block {
+    width: 200px;
+    margin: 10px 30px 20px 10px;
+    border: 5px solid #4c3369;
+    border-radius: 15px;
+    padding: 15px;
+    background-color: white;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+.item-block:hover {
+    box-shadow: 0 0 10px rgb(131, 88, 206);
+}
+.item-image {
+	width: 200px;
+	height: 200px;
+	object-fit: cover;
+	border-radius: 10px;
+}
+.item-title {
+	font-size: larger;
+	font-weight: bold;
+	color: #4c3369;
+	margin: 7px 0 0 0;
+}
+.item-btns {
+    margin: 10px 0;
+}
+.item-price {
+	margin: 5px 0;
+	font-size: 25px;
+	font-weight: bolder;
+	color: darkgreen;
+}
+.item-not-in-stock, .item-not-available  {
+    margin-top: 15px;
+}

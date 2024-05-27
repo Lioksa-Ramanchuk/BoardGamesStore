@@ -1,0 +1,51 @@
+@import './common.css';
+@import './utils/items-set.css';
+
+.container-upper {
+    margin: 20px;
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 80px;
+    padding-left: 5vw;
+}
+.container-upper > div {
+    flex-basis: 1;
+}
+
+.item-count {
+    color: #4c3369;
+}
+.orders-list {
+    border-collapse: collapse;
+}
+.orders-list th {
+    border: 1px solid #4c3369;
+    padding: 8px 15px;
+    font-weight: 700;
+    color: #4c3369;
+}
+.orders-list tr {
+    cursor: pointer;
+}
+.orders-list td {
+    border: 1px solid #4c3369;
+    padding: 8px 15px;
+}
+.orders-list tr:hover td {
+    background-color: #ccb5ee;
+}
+
+.o-title {
+    margin: 10px;
+    font-weight: bolder;
+    font-size: larger;
+    color: #4c3369;
+}
+.o-details {
+    margin: 10px;
+}
+.o-details td {
+    border-bottom: 1px solid #4c3369;
+    padding: 15px 50px 5px 0;
+    color: #444;
+}

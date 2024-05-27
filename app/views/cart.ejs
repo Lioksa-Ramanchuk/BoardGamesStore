@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Кошык | Інтэрнэт-крама настольных гульняў</title>
+    <meta charset="utf-8"/>
+    <link rel='icon' href='/images/interface/icon.png'/>
+    <link rel="stylesheet" type="text/css" href="/style/cart.css"/>
+</head>
+<body>
+    <header>
+        <img src="/images/interface/icon.png"/>
+        <h1>Інтэрнэт-крама настольных гульняў</h1>
+    </header>
+    <div class="content">
+        <nav>
+            <ul>
+                <li><a href="/catalog">Каталог</a></li>
+                <li><a href="/favs">Абранае</a></li>
+                <li><a href="/cart" class="active">Кошык</a></li>
+                <li><a href="/orders">Заказы</a></li>
+                <li><a href="/account">Акаўнт</a></li>
+            </ul>
+        </nav>
+        <main>
+            <div class="buttons-row">
+                <button onclick="tryOpenOrderingPage()">Аформіць заказ</button>
+                <form action="/api/clear-cart" method="POST" id="clear-cart-form">
+                    <button type="submit" class="cancel">Ачысціць кошык</button>
+                </form>
+            </div>
+            <p id="cart-cost" class="cart-cost"></p>
+            <p class="error-msg" id="cart-error"></p>
+            <div id="items-set" class="items-set"></div>
+        </main>
+    </div>
+    <footer>
+        <p>(ɔ) Аляксей Раманчук 2023. All rights reversed.</p>
+        <a href="https://www.flaticon.com/free-icons/board-game" title="board game icons">Board game icons created by Freepik - Flaticon</a>
+    </footer>
+    <script>
+        const $ = q => document.querySelector(q);
+
+        updateCart();
+
+        function updateCart() {
+            fetch(`/api/cart`)
+                .then(res => res.json())
+                .then(items => {
+                    const kItemsSet = $('#items-set');
+                    kItemsSet.innerHTML = '';
+                    items.forEach(item => {
+                        let [iId, iTitle, iPrice, iCartCount, iImage, iIsInStock, iIsAvailable, iIsInFavs] = item;
+                        kItemsSet.innerHTML += `
+                            <div id="item-${iId}" class="item-block" onclick="itemBlockOnClick(event, ${iId})">
+                                <img src="${iImage}" class="item-image"/>
+                                <p class="item-title">${iTitle}</p>
+                                <p class="item-price">${iPrice.toFixed(2)} Br</p>
+                                <input type="number" min="1" max="99" value="${iCartCount}" onchange="onItemCartCountChange(event, ${iId})" onclick="event.stopPropagation()"" class="item-cart-count"/>
+                                <div class="item-btns">
+                                    <button class="item-button item-tgl-in-favs"></button>
+                                    <button class="item-button item-tgl-in-cart" style="background-image: url('/images/interface/rem_from_cart_btn.png');"></button>
+                                </div>
+                            </div>
+                        `;
+                        loadItem(iId, iIsInStock, iIsAvailable, iIsInFavs);
+                    });
+                });
+            updateCartCost();
+        }
+
+        function updateCartCost() {
+            fetch(`/api/get-cart-cost`)
+                .then(res => res.json())
+                .then(data => {
+                    $('#cart-cost').innerHTML = `Кошт: ${data.cart_cost} Br`;
+                });
+        }
+
+        function loadItem(iId, iIsInStock, iIsAvailable, iIsInFavs) {
+            $(`#item-${iId} .item-tgl-in-favs`).style.backgroundImage = 
+                `url('${getInFavsToggleBtnImg(iIsInFavs)}')`;
+            let tglInCartBtn = $(`#item-${iId} .item-tgl-in-cart`);
+            if (!iIsAvailable) {
+                $(`#item-${iId}`).innerHTML += '<p class="item-not-available">Недаступна</p>';
+            } else if (!iIsInStock) {
+                $(`#item-${iId}`).innerHTML += '<p class="item-not-in-stock">Няма ў наяўнасці</p>';
+            }
+        }
+
+        function itemBlockOnClick(e, id) {
+            if (e.target === $(`#item-${id} .item-tgl-in-favs`)) {
+                toggleItemInFavs(id);
+                return;
+            } else if (e.target === $(`#item-${id} .item-tgl-in-cart`)) {
+                toggleItemInCart(id);
+                return;
+            }
+            window.location.href = `/item/${id}`;
+        }
+
+        function onItemCartCountChange(e, id) {
+            $(`#item-${id} .item-cart-count`).disabled = true;
+            const newItemCartCount = e.target.value;
+            fetch(`/api/update-cart-item-count`, { method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ item_id: id, cart_count: newItemCartCount }),
+                }).then(res => {
+                    return res.json();
+                }).then(data => {
+                    $(`#item-${id} .item-cart-count`).value = data.cart_count;
+                    $(`#item-${id} .item-cart-count`).disabled = false;
+                    updateCartCost();
+                });
+        }
+
+        function toggleItemInFavs(id) {
+            fetch(`/api/toggle-in-favs/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(json => {
+                    $(`#item-${id} .item-tgl-in-favs`).style.backgroundImage = 
+                        `url(${getInFavsToggleBtnImg(json.isInFavs)})`;
+                });
+        }
+        function getInFavsToggleBtnImg(isInFavs) {
+            return isInFavs ? '/images/interface/rem_from_favs_btn.png' : '/images/interface/add_to_favs_btn.png'
+        }
+        function toggleItemInCart(id) {
+            fetch(`/api/toggle-in-cart/${id}`, { method: 'POST' })
+                .then(() => {
+                    $(`#item-${id}`).remove();
+                    updateCartCost();
+                });
+        }
+
+        function tryOpenOrderingPage() {
+            fetch(`/api/validate-cart`, { method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(res => {
+                    return res.json();
+                }).then(json => {
+                    if (json.error) {
+                        $(`#cart-error`).innerHTML = json.error;
+                        return;
+                    }
+                    window.location.href = `/ordering`;
+                });
+        }
+    </script>
+</body>
+</html>

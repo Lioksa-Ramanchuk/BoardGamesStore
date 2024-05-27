@@ -1,0 +1,7 @@
+@import './common.css';
+@import './utils/form.css';
+
+.cart-cost {
+    margin: 10px 0;
+    color: #4c3369;
+}

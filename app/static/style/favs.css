@@ -1,0 +1,7 @@
+@import './common.css';
+@import 'utils/items-set.css';
+@import './utils/buttons-row.css';
+
+.buttons-row {
+    justify-content: space-between;
+}

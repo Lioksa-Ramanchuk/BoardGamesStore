@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Акаўнт | Інтэрнэт-крама настольных гульняў</title>
+    <meta charset="utf-8"/>
+    <link rel='icon' href='/images/interface/icon.png'/>
+    <link rel="stylesheet" type="text/css" href="/style/account.css"/>
+</head>
+<body>
+    <header>
+        <img src="/images/interface/icon.png"/>
+        <h1>Інтэрнэт-крама настольных гульняў</h1>
+    </header>
+    <div class="content">
+        <nav>
+            <ul>
+<% if (role === 'ADMINROLE') { %> 
+                <li><a href="/catalog">Каталог</a></li>
+                <li><a href="/add-item">Дадаць тавар</a></li>
+                <li><a href="/orders">Заказы</a></li>
+                <li><a href="/account" class="active">Акаўнт</a></li>
+<% } else if (role === 'CLIENTROLE') { %>
+                <li><a href="/catalog">Каталог</a></li>
+                <li><a href="/favs">Абранае</a></li>
+                <li><a href="/cart">Кошык</a></li>
+                <li><a href="/orders">Заказы</a></li>
+                <li><a href="/account" class="active">Акаўнт</a></li>
+<% } else if (role === 'GUESTROLE') { %>
+                <li><a href="/catalog">Каталог</a></li>
+                <li><a href="/account" class="active">Акаўнт</a></li>
+<% } %>
+            </ul>
+        </nav>
+        <main>
+            <div class="forms-container">
+<% if (role === 'GUESTROLE') { %>
+                <form action="/api/sign-up" method="POST" id="sign-up-form" autocomplete="off">
+                    <p class="form-name">Рэгістрацыя</p>
+                    <div class="form-field">
+                        <label for="suf-login">Лагін</label>
+                        <input type="text" id="suf-login" name="login" required placeholder="Лагін" pattern="^\w{1,20}$" title="ад 1 да 20 сімвалаў A-Z, a-z, 0-9, _"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="suf-password">Пароль</label>
+                        <input type="password" id="suf-password" name="password" required placeholder="Пароль" pattern="^.{4,20}$" title="ад 4 да 20 сімвалаў"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="suf-fullname">Імя</label>
+                        <input type="text" id="suf-fullname" name="fullname" required placeholder="Імя" maxlength="255"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="suf-email">Email</label>
+                        <input type="email" id="suf-email" name="email" required placeholder="Email" maxlength="320"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="suf-address">Адрас дастаўкі</label>
+                        <input type="text" id="suf-address" name="address" required placeholder="Адрас дастаўкі" maxlength="255"/>
+                    </div>
+                    <button type="submit">Зарэгістравацца</button>
+                </form>
+
+                <form action="/api/sign-in" method="POST" id="sign-in-form" autocomplete="off">
+                    <p class="form-name">Уваход</p>
+                    <div class="form-field">
+                        <label for="sif-login">Лагін</label>
+                        <input type="text" id="sif-login" name="login" required placeholder="Лагін" pattern="^\w{1,20}$" title="ад 1 да 20 сімвалаў A-Z, a-z, 0-9, _"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="sif-password">Пароль</label>
+                        <input type="password" id="sif-password" name="password" required placeholder="Пароль" pattern="^.{4,20}$" title="ад 4 да 20 сімвалаў"/>
+                    </div>
+                    <button type="submit">Увайсці</button>
+                </form>
+<% } %>
+
+<% if (role === 'CLIENTROLE' || role === 'ADMINROLE') { %>
+                <form action="/api/update-account-info" method="POST" id="update-account-info-form" autocomplete="off">
+                    <p class="form-name">Звесткі акаўнта</p>
+                    <div class="form-field">
+                        <label for="uai-login">Лагін</label>
+                        <input type="text" id="uai-login" name="login" placeholder="Лагін" pattern="^\w{1,20}$" title="ад 1 да 20 сімвалаў A-Z, a-z, 0-9, _"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="uai-password">Пароль</label>
+                        <input type="password" id="uai-password" name="password" placeholder="Пароль" pattern="^.{4,20}$" title="ад 4 да 20 сімвалаў"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="uai-fullname">Імя</label>
+                        <input type="text" id="uai-fullname" name="fullname" placeholder="Імя" maxlength="255"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="uai-email">Email</label>
+                        <input type="email" id="uai-email" name="email" placeholder="Email" maxlength="320"/>
+                    </div>
+                    <button type="submit">Абнавіць звесткі акаўнта</button>
+                </form>
+<% } %>
+
+<% if (role === 'CLIENTROLE') { %>
+                <form action="/api/update-client-account-info" method="POST" id="update-client-account-info-form" autocomplete="off">
+                    <p class="form-name">Кліенцкія звесткі</p>
+                    <div class="form-field">
+                        <label for="ucai-address">Адрас дастаўкі</label>
+                        <input type="text" id="ucai-address" name="address" placeholder="Адрас дастаўкі"/>
+                    </div>
+                    <button type="submit">Абнавіць кліенцкія звесткі</button>
+                </form>
+<% } %>
+
+<% if (role === 'ADMINROLE') { %>
+                <form action="/api/create-new-admin-account" method="POST" id="create-new-admin-account-form" autocomplete="off">
+                    <p class="form-name">Дадаць адміністратара</p>
+                    <div class="form-field">
+                        <label for="cnaa-login">Лагін</label>
+                        <input type="text" id="cnaa-login" name="login" required placeholder="Лагін" pattern="^\w{1,20}$" title="ад 1 да 20 сімвалаў A-Z, a-z, 0-9, _"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="cnaa-password">Пароль</label>
+                        <input type="password" id="cnaa-password" name="password" required placeholder="Пароль" pattern="^.{4,20}$" title="ад 4 да 20 сімвалаў"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="cnaa-fullname">Імя</label>
+                        <input type="text" id="cnaa-fullname" name="fullname" required placeholder="Імя" maxlength="255"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="cnaa-email">Email</label>
+                        <input type="email" id="cnaa-email" name="email" required placeholder="Email" maxlength="320"/>
+                    </div>
+                    <button type="submit">Дадаць адміністратара</button>
+                </form>
+<% } %>
+            </div>
+<% if (locals.acc_success) { %>
+                <p class="success-msg"><%= acc_success %></p>
+<% } %>    
+<% if (locals.acc_error) { %>
+                <p class="error-msg"><%= acc_error %></p>
+<% } %>
+            <hr/>
+            <div class="buttons-row">
+<% if (role === 'CLIENTROLE' || role === 'ADMINROLE') { %>
+                <form action="/api/sign-out" method="POST" id="sign-out-form" autocomplete="off"
+                        onsubmit="return confirm('Вы сапраўды хочаце выйсці з акаўнта?');">
+                    <button type="submit" class="cancel">Выйсці</button>
+                </form>
+                <form action="/api/deactivate-account" method="POST" id="deactivate-account-form" autocomplete="off"
+                        onsubmit="return confirm('Вы сапраўды хочаце выдаліць свой акаўнт?');">
+                    <button type="submit" class="cancel">Выдаліць акаўнт</button>
+                </form>
+<% } %>
+            </div>
+        </main>
+    </div>
+    <footer>
+        <p>(ɔ) Аляксей Раманчук 2023. All rights reversed.</p>
+        <a href="https://www.flaticon.com/free-icons/board-game" title="board game icons">Board game icons created by Freepik - Flaticon</a>
+    </footer>
+    <script>
+        const $ = q => document.querySelector(q);
+
+<% if (role === 'CLIENTROLE' || role === 'ADMINROLE') { %>
+        fetch(`/api/get-account-info`)
+            .then(res => res.json())
+            .then(info => {
+                $('#uai-login').value = info.login;
+                $('#uai-fullname').value = info.fullname;
+                $('#uai-email').value = info.email;
+            });
+<% } %>  
+
+<% if (role === 'CLIENTROLE') { %>
+        fetch(`/api/get-client-account-info`)
+            .then(res => res.json())
+            .then(info => {
+                $('#ucai-address').value = info.address;
+            });
+<% } %>
+    </script>
+</body>
+</html>

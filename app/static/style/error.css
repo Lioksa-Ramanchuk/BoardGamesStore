@@ -1,0 +1,13 @@
+@import 'common.css';
+
+.container {
+    text-align: center;
+    padding: 20px;
+}
+.error-declaration {
+    padding: 20px;
+    color: #4c3369;
+}
+.error-message {
+    padding: 20px;
+}

@@ -1,0 +1,20 @@
+@import './common.css';
+@import 'utils/items-set.css';
+@import './utils/buttons-row.css';
+
+.buttons-row {
+    justify-content: end;
+}
+.cart-cost {
+    margin: 0 30px 0 30px;
+    color: #4c3369;
+}
+.error-msg {
+    margin: 0 30px 10px 30px;
+}
+.item-block input[type="number"] {
+    width: 150px;
+	padding: 7px 10px;
+	border: 2px solid #ccb5ee;
+	border-radius: 10px;
+}

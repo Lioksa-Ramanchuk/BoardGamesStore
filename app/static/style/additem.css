@@ -1,0 +1,12 @@
+@import './common.css';
+@import './utils/form.css';
+
+.item-image-wrapper img {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+.success-msg, .error-msg {
+    margin: 20px 0;
+}

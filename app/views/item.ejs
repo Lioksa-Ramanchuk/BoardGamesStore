@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тавар | Інтэрнэт-крама настольных гульняў</title>
+    <meta charset="utf-8"/>
+    <link rel='icon' href='/images/interface/icon.png'/>
+    <link rel="stylesheet" type="text/css" href="/style/item.css"/>
+</head>
+<body>
+    <header>
+        <img src="/images/interface/icon.png"/>
+        <h1>Інтэрнэт-крама настольных гульняў</h1>
+    </header>
+    <div class="content">
+        <nav>
+            <ul>
+<% if (role === 'ADMINROLE') { %> 
+                <li><a href="/catalog">Каталог</a></li>
+                <li><a href="/item/<%= item_id %>" class="active">Тавар</a></li>
+                <li><a href="/add-item">Дадаць тавар</a></li>
+                <li><a href="/orders">Заказы</a></li>
+                <li><a href="/account">Акаўнт</a></li>
+<% } else if (role === 'CLIENTROLE') { %>
+                <li><a href="/catalog">Каталог</a></li>
+                <li><a href="/item/<%= item_id %>" class="active">Тавар</a></li>
+                <li><a href="/favs">Абранае</a></li>
+                <li><a href="/cart">Кошык</a></li>
+                <li><a href="/orders">Заказы</a></li>
+                <li><a href="/account">Акаўнт</a></li>
+<% } else if (role === 'GUESTROLE') { %>
+                <li><a href="/catalog">Каталог</a></li>
+                <li><a href="/item/<%= item_id %>" class="active">Тавар</a></li>
+                <li><a href="/account">Акаўнт</a></li>
+<% } %>
+            </ul>
+        </nav>
+        <main>
+            <div class="container">
+                <div class="item-main">
+                    <div class="item-image-wrapper">
+                        <img id="item-image"/>
+                    </div>
+                    <div id="item-info" class="item-info">
+                        <h1 id="item-title" class="item-title"></h1>
+                        <table class="item-details">
+                            <tr>
+                                <td>Катэгорыя</td>
+                                <td id="item-category"></td>
+                            </tr>
+                            <tr>
+                                <td>Выдавецтва</td>
+                                <td id="item-publisher"></td>
+                            </tr>
+                            <tr>
+                                <td>Год выдання</td>
+                                <td id="item-year"></td>
+                            </tr>
+                            <tr>
+                                <td>Колькасць гульцоў</td>
+                                <td id="item-players"></td>
+                            </tr>
+                            <tr>
+                                <td>Гульнявы час</td>
+                                <td id="item-play-time"></td>
+                            </tr>
+                            <tr>
+                                <td>Узрост гульцоў</td>
+                                <td id="item-player-min-age"></td>
+                            </tr>
+                        </table>
+                        <p id="item-price" class="item-price"></p>
+                        <div class="item-btns">
+<% if (role === 'ADMINROLE') { %>
+                            <button onclick="window.location.href=`/update-item/<%= item_id %>`" class="item-button" id="item-update" style="background-image: url('/images/interface/update_item_btn.png')"></button>
+<% } else if (role === 'CLIENTROLE') { %>
+                            <button onclick="toggleItemInFavs(<%= item_id %>)" class="item-button" id="item-tgl-in-favs"></button>
+                            <button onclick="toggleItemInCart(<%= item_id %>)" class="item-button" id="item-tgl-in-cart" disabled></button>
+<% } %>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-description-wrapper">
+                    <h2>Апісанне</h2>
+                    <p id="item-description"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <footer>
+        <p>(ɔ) Аляксей Раманчук 2023. All rights reversed.</p>
+        <a href="https://www.flaticon.com/free-icons/board-game" title="board game icons">Board game icons created by Freepik - Flaticon</a>
+    </footer>
+    <script>
+        const $ = q => document.querySelector(q);
+        let itemInfo = {};
+
+        fetch(`/api/get-item-info/<%= item_id %>`)
+            .then(res => res.json())
+            .then(info => {
+                itemInfo = info;
+                $('#item-image').src = info.image;
+                $('#item-title').textContent = info.title;
+                $('#item-price').textContent = `${info.price.toFixed(2)} Br`;
+                $('#item-category').textContent = info.category;
+                $('#item-publisher').textContent = info.publisher;
+                $('#item-year').textContent = info.year;
+                $('#item-players').textContent = `${info.min_players}—${info.max_players}`;
+                $('#item-play-time').textContent = `${info.play_time} хв`;
+                $('#item-player-min-age').textContent = `${info.player_min_age}+`;
+                $('#item-description').innerHTML = info.description.replace(/\n/g, '<br/>');
+<% if (role === 'CLIENTROLE') { %>
+                $('#item-tgl-in-favs').style.backgroundImage = 
+                    `url(${getInFavsToggleBtnImg(info.is_in_favs)}`;
+                let tglInCartBtn = $('#item-tgl-in-cart');
+                tglInCartBtn.style.backgroundImage = 
+                    `url(${getInCartToggleBtnImg(info.is_in_cart)}`;
+                tglInCartBtn.disabled = !info.is_in_cart && (!info.is_available || !info.count);
+<% } %>
+                if (!info.is_available) {
+                    $('#item-info').innerHTML += '<p class="item-not-available">Недаступна</p>';
+                } else if (!info.count) {
+                    $('#item-info').innerHTML += '<p class="item-not-in-stock">Няма ў наяўнасці</p>';
+                }
+            });
+
+        function toggleItemInFavs(id) {
+            fetch(`/api/toggle-in-favs/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(json => {
+                    itemInfo.is_in_favs = json.isInFavs;
+                    $(`#item-tgl-in-favs`).style.backgroundImage = 
+                        `url(${getInFavsToggleBtnImg(json.isInFavs)})`;
+                });
+        }
+        function getInFavsToggleBtnImg(isInFavs) {
+            return isInFavs ? '/images/interface/rem_from_favs_btn.png' : '/images/interface/add_to_favs_btn.png'
+        }
+        function toggleItemInCart(id) {
+            fetch(`/api/toggle-in-cart/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(json => {
+                    itemInfo.isInCart = json.isInCart;
+                    let tglInCartBtn = $('#item-tgl-in-cart');
+                    tglInCartBtn.style.backgroundImage = 
+                        `url(${getInCartToggleBtnImg(json.isInCart)})`;
+                    tglInCartBtn.disabled = !json.isInCart && (!itemInfo.is_available || !itemInfo.count);
+                });
+        }
+        function getInCartToggleBtnImg(isInCart) {
+            return isInCart ? '/images/interface/rem_from_cart_btn.png' : '/images/interface/add_to_cart_btn.png'
+        }
+    </script>
+</body>
+</html>

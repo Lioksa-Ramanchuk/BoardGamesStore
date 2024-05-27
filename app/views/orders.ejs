@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Заказы | Інтэрнэт-крама настольных гульняў</title>
+    <meta charset="utf-8"/>
+    <link rel='icon' href='/images/interface/icon.png'/>
+    <link rel="stylesheet" type="text/css" href="/style/orders.css"/>
+</head>
+<body>
+    <header>
+        <img src="/images/interface/icon.png"/>
+        <h1>Інтэрнэт-крама настольных гульняў</h1>
+    </header>
+    <div class="content">
+        <nav>
+            <ul>
+<% if (role === 'ADMINROLE') { %> 
+                    <li><a href="/catalog">Каталог</a></li>
+                    <li><a href="/add-item">Дадаць тавар</a></li>
+                    <li><a href="/orders" class="active">Заказы</a></li>
+                    <li><a href="/account">Акаўнт</a></li>
+<% } else if (role === 'CLIENTROLE') { %>
+                    <li><a href="/catalog">Каталог</a></li>
+                    <li><a href="/favs">Абранае</a></li>
+                    <li><a href="/cart">Кошык</a></li>
+                    <li><a href="/orders" class="active">Заказы</a></li>
+                    <li><a href="/account">Акаўнт</a></li>
+<% } %>
+            </ul>
+        </nav>
+        <main>
+            <div class="container-upper">
+                <div>
+                    <table id="orders-list" class="orders-list">
+                        <thead>
+                            <tr>
+                                <th>Нумар заказа</th>
+                                <th>Дата</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="order-info" class="order-info"></div>
+            </div>
+            <div id="items-set" class="items-set"></div>
+        </main>
+    </div>
+    <footer>
+        <p>(ɔ) Аляксей Раманчук 2023. All rights reversed.</p>
+        <a href="https://www.flaticon.com/free-icons/board-game" title="board game icons">Board game icons created by Freepik - Flaticon</a>
+    </footer>
+    <script>
+        const $ = q => document.querySelector(q);
+
+        loadOrdersList();
+<% if (locals.order_id) { %>
+        loadOrder(<%= order_id %>);
+<% } %>
+
+        function loadOrdersList() {
+<% if (role === 'ADMINROLE') { %>
+            fetch(`/api/get-all-orders-list`)
+<% } else if (role === 'CLIENTROLE') { %>
+            fetch(`/api/get-client-orders-list`)     
+<% } %>
+                .then(res => res.json())
+                .then(orders => {
+                    const kOrdersList = $('#orders-list tbody');
+                    kOrdersList.innerHTML = '';
+                    orders.forEach(order => {
+                        let [oId, oNumber, oDate, oStatus] = order;
+                        let date = sysdateToLocalDate(oDate);
+                        kOrdersList.innerHTML += `
+                            <tr id="orders-list-entry-${oId}" onclick="window.location.href = '/orders/${oId}';">
+                                <td>${oNumber}</td>
+                                <td>${date.toLocaleDateString()}</td>
+                                <td>${translateOSName(oStatus)}</td>
+                            </tr>
+                        `;
+                    });
+                });
+        }
+
+        function loadOrder(order_id) {
+            fetch(`/api/get-order-info/${order_id}`)
+                .then(res => res.json())
+                .then(info => {
+                    let date = sysdateToLocalDate(info.order_date);
+                    $('#order-info').innerHTML = `
+                        <h1 class="o-title">Заказ № ${info.order_number}</h1>
+                        <table class="o-details">
+                            <tr>
+                                <td>Дата</td>
+                                <td>${date.toLocaleDateString()} ${date.toLocaleTimeString()}</td>
+                            </tr>
+                            <tr>
+                                <td>Статус</td>
+                                <td>
+<% if (role === 'ADMINROLE') { %>
+                                    <select id="order-status" onchange="updateOrderStatus(${order_id})"></select>
+<% } else if (role == 'CLIENTROLE') { %>
+                                    ${translateOSName(info.os_name)}
+<% } %>    
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Каментар</td>
+                                <td>${(info.order_comment ?? '-')}</td>
+                            </tr>
+                            <tr>
+                                <td>Кошт</td>
+                                <td>${info.order_cost}</td>
+                            </tr>
+                            <tr>
+                                <td>Кліент</td>
+                                <td>${info.client_fullname}</td>
+                            </tr>
+                            <tr>
+                                <td>Email кліента</td>
+                                <td>${info.client_email}</td>
+                            </tr>
+                            <tr>
+                                <td>Адрас дастаўкі</td>
+                                <td>${info.client_address}</td>
+                            </tr>
+                            <tr>
+                                <td>Нумар карткі</td>
+                                <td>${info.card_number}</td>
+                            </tr>
+                        </table>
+                    `;
+<% if (role === 'ADMINROLE') { %>
+                    fetch(`/api/get-order-statuses`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const kOrderStatus = $(`#order-status`);
+                            kOrderStatus.innerHTML = '';
+                            data.forEach(item => {
+                                let [osId, osName] = item;
+                                kOrderStatus.innerHTML += `
+                                    <option id="os-${osId}" value="${osName}">${translateOSName(osName)}</option>
+                                `;
+                            });
+                            kOrderStatus.value = info.os_name;
+                        });
+<% } %>
+                });
+
+            fetch(`/api/get-order-items/${order_id}`)
+                .then(res => res.json())
+                .then(items => {
+                    const kItemsSet = $('#items-set');
+                    kItemsSet.innerHTML = '';
+                    items.forEach(item => {
+                        let [iId, iTitle, iPrice, iCount, iImage] = item;
+                        kItemsSet.innerHTML += `
+                            <div id="item-${iId}" class="item-block" onclick="window.location.href = '/item/${iId}';">
+                                <img src="${iImage}" class="item-image"/>
+                                <p class="item-title">${iTitle}</p>
+                                <p class="item-price">${iPrice.toFixed(2)} Br</p>
+                                <p class="item-count">Колькасць: <b>${iCount} шт.</b></p>
+                            </div>
+                        `;
+                    });
+            });
+        }
+
+<% if (role === 'ADMINROLE') { %>
+        function updateOrderStatus(order_id) {
+            let new_os_name = $(`#order-status`).value;
+            fetch('/api/set-order-status', { method: 'POST',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify({ order_id, new_os_name }),
+            }).then(() => loadOrdersList());
+        }
+<% } %>
+
+        function sysdateToLocalDate(sysdate) {
+            sysdate = new Date(sysdate);
+            var newDate = new Date(sysdate.getTime()+sysdate.getTimezoneOffset()*60*1000);
+            var offset = sysdate.getTimezoneOffset() / 60;
+            var hours = sysdate.getHours();
+            newDate.setHours(hours - offset);
+            return newDate;
+        }
+
+        function translateOSName(osName) {
+            switch (osName) {
+                case 'PROCESSING':  return 'у апрацоўцы';
+                case 'SHIPPED':     return 'дасланы';
+                case 'DELIVERED':   return 'дастаўлены';
+                case 'CANCELLED':   return 'скасаваны';
+                case 'RETURNED':    return 'вернуты';
+                default:            return osName;
+            }
+        }
+    </script>
+</body>
+</html>

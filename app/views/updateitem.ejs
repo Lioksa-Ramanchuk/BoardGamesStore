@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Змяніць тавар | Інтэрнэт-крама настольных гульняў</title>
+    <meta charset="utf-8"/>
+    <link rel='icon' href='/images/interface/icon.png'/>
+    <link rel="stylesheet" type="text/css" href="/style/updateitem.css"/>
+</head>
+<body>
+    <header>
+        <img src="/images/interface/icon.png"/>
+        <h1>Інтэрнэт-крама настольных гульняў</h1>
+    </header>
+    <div class="content">
+        <nav>
+            <ul>
+                <li><a href="/catalog">Каталог</a></li>
+                <li><a href="/add-item">Дадаць тавар</a></li>
+                <li><a href="/update-item/<%= item_id %>" class="active">Змяніць тавар</a></li>
+                <li><a href="/orders">Заказы</a></li>
+                <li><a href="/account">Акаўнт</a></li>
+            </ul>
+        </nav>
+        <main>
+            <div class="forms-container">
+                <form class="item-image-wrapper">
+                    <img id="i-image" src="/images/items/default.png"/>
+                </form>
+                <form action="/api/update-item" method="POST" enctype="multipart/form-data" id="item-info-form" class="item-info" autocomplete="off">
+                    <input type="hidden" name="id" value="<%= item_id %>"/>
+                    <div class="form-field">
+                        <label for="i-title">Назва тавара</label>
+                        <input type="text" id="i-title" name="title" placeholder="Назва тавара" maxlength="127"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-price">Цана (Br)</label>
+                        <input type="number" id="i-price" name="price" placeholder="Цана" min="0" max="9999999.99" step="0.01"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-count">Колькасць</label>
+                        <input type="number" id="i-count" name="count" placeholder="Колькасць" min="0" max="9999999" step="1"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-image-path">Выява</label>
+                        <input type="file" id="i-image-path" name="image" accept="image/*" placeholder="Шлях да выявы" onchange="uploadImage(event)"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-description">Апісанне</label>
+                        <textarea id="i-description" name="description" placeholder="Апісанне тавара" maxlength="1000"></textarea>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-category">Катэгорыя</label>
+                        <input type="text" id="i-category" name="category" placeholder="Катэгорыя" maxlength="127"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-publisher">Выдавецтва</label>
+                        <input type="text" id="i-publisher" name="publisher" placeholder="Выдавецтва" maxlength="127"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-year">Год выдання</label>
+                        <input type="number" id="i-year" name="year" placeholder="Год выдання" min="0" max="3000" step="1"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-min-players">Мінімальная колькасць гульцоў</label>
+                        <input type="number" id="i-min-players" name="min_players" placeholder="Мінімальная колькасць гульцоў" min="1" max="1000" step="1"
+                                onchange="document.querySelector('#i-max-players').min = this.value;"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-max-players">Максімальная колькасць гульцоў</label>
+                        <input type="number" id="i-max-players" name="max_players" placeholder="Максімальная колькасць гульцоў" min="document.querySelector('#i-min-players').value" max="1000" step="1"/>
+                    </div>
+                    <div class="form-field">
+                        <label for="i-play-time">Гульнявы час (у хвілінах)</label>
+                        <input type="number" id="i-play-time" name="play_time" placeholder="Гульнявы час" min="0" max="3000" step="1"/> 
+                    </div>
+                    <div class="form-field">
+                        <label for="i-player-min-age">Мінімальны ўзрост гульцоў</label>
+                        <input type="number" id="i-player-min-age" name="player_min_age" placeholder="Мінімальны ўзрост гульцоў" min="0" max="150" step="1"/> 
+                    </div>
+                    <div class="form-field form-field-horizontal">
+                        <input type="checkbox" id="i-is-available" name="is_available" checked/>
+                        <label for="i-is-available">Тавар даступны</label>
+                    </div>
+                    <button type="submit">Змяніць звесткі тавара</button>
+<% if (locals.ui_error) { %>
+                    <p class="error-msg"><%= ui_error %></p>
+<% } %> 
+<% if (locals.ui_success) { %>
+                    <p class="success-msg"><%= ui_success %></p>
+<% } %> 
+                </form>
+            </div>
+        </main>
+    </div>
+    <footer>
+        <p>(ɔ) Аляксей Раманчук 2023. All rights reversed.</p>
+        <a href="https://www.flaticon.com/free-icons/board-game" title="board game icons">Board game icons created by Freepik - Flaticon</a>
+    </footer>
+    <script>
+        const $ = q => document.querySelector(q);
+
+        function uploadImage(event) {
+            $(`#i-image`).src = URL.createObjectURL(event.target.files[0]);
+        }
+
+        fetch(`/api/get-item-info/<%= item_id %>`)
+            .then(res => res.json())
+            .then(info => {
+                console.log(info);
+                $('#i-image').src = info.image;
+                $('#i-title').value = info.title;
+                $('#i-price').value = info.price;
+                $('#i-count').value = info.count;
+                $('#i-description').value = info.description;
+                $('#i-category').value = info.category;
+                $('#i-publisher').value = info.publisher;
+                $('#i-year').value = info.year;
+                $('#i-min-players').value = info.min_players;
+                $('#i-max-players').value = info.max_players;
+                $('#i-play-time').value = info.play_time;
+                $('#i-player-min-age').value = info.player_min_age;
+                $('#i-is-available').value = info.is_available;
+            });
+    </script>
+</body>
+</html>

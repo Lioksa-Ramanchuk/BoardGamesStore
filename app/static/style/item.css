@@ -1,0 +1,72 @@
+@import 'common.css';
+@import 'utils/item-info.css';
+
+.container {
+    display: flex;
+    flex-flow: column nowrap;
+    margin: 20px;
+}
+.item-main {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    margin: 0 15vw 20px 0;
+}
+.item-image-wrapper {
+    flex: 30%;
+    margin: 10px;
+    text-align: center;
+}
+.item-image-wrapper img {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+.item-info {
+    flex: 50%;
+    margin: 10px;
+}
+.item-title {
+    margin: 10px;
+    font-weight: bolder;
+    font-size: larger;
+    color: #4c3369;
+}
+.item-details {
+    margin: 10px;
+}
+.item-details td {
+    border-bottom: 1px solid #4c3369;
+    padding: 15px 50px 5px 0;
+    color: #444;
+}
+.item-price {
+	margin: 20px;
+	color: darkgreen;
+	font-size: 30px;
+	font-weight: bolder;
+}
+.item-btns {
+    margin: 10px 0;
+}
+.item-not-in-stock, .item-not-available {
+    margin-top: 20px;
+}
+.item-btns, .item-not-in-stock, .item-not-available {
+    max-width: 25vw;
+}
+
+.item-description-wrapper {
+    width: 100%;
+    text-align: justify;
+}
+.item-description-wrapper h2 {
+    font-weight: bolder;
+    color: #4c3369;
+}
+.item-description-wrapper p {
+    margin: 20px 0;
+    text-align: justify;
+    max-width: 70vw;
+}

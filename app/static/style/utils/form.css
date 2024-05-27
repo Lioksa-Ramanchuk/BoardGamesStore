@@ -1,0 +1,49 @@
+.forms-container {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 80px;
+    padding-left: 5vw;
+}
+
+.forms-container > form {
+    flex-basis: 1;
+    margin: 30px;
+}
+
+.form-name {
+    font-weight: bold;
+    margin: 0 5px 15px 5px;
+    color: #4c3369;
+    text-align: center;
+}
+.form-field {
+    margin-bottom: 10px;
+}
+.form-field label {
+	display: block;
+	margin: 5px;
+	font-size: medium;
+	font-weight: 600;
+	color: #4c3369;
+}
+.form-field input {
+	padding: 7px 10px;
+	border: 2px solid #ccb5ee;
+	border-radius: 10px;
+}
+.form-field-horizontal {
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: center;
+}
+.form-field.form-field-horizontal label {
+    display: inline-block;
+    margin: 0 10px;
+}
+.forms-container > form > button {
+    width: 100%;
+    margin-top: 10px;
+}
+.success-msg, .error-msg {
+    margin: 0 20px 20px 20px;
+}
